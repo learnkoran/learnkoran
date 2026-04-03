@@ -1,0 +1,7 @@
+{
+  "name": "LearnKoran.de",
+  "description": "A multilingual Islamic platform offering Prayer Times, The Holy Quran, and Islamic resources.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

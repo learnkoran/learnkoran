@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heiliger Koran – LearnKoran.de</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+.font-arabic{font-family:"Scheherazade","Amiri",serif;direction:rtl}
+.font-latin{font-family:Arial,sans-serif;direction:ltr}
+
+/* aktive Ayah */
+.ayah-active{
+  background-color: rgba(59,130,246,0.15);
+  border-left: 4px solid #3b82f6;
+  padding-left: 8px;
+  transition: background-color 0.3s;
+}
+
+/* Footer über Player */
+footer{position:relative;z-index:50}
+
+/* HEADER mit lokal gespeichertem Hintergrundbild */
+.header-bg{
+  background-image: url('Ramadan-3435847_640.jpg');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  color: white;
+}
+.header-overlay{
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0,0,0,0.35); /* dunkler Overlay für bessere Lesbarkeit */
+}
+.header-content{
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 2rem;
+}
+.header-title{
+  flex: 1;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+.header-arrow{
+  font-size: 1.5rem;
+  color: white;
+  text-decoration: none;
+}
+.header-arrow:hover{
+  color: #d1d5db;
+}
+</style>
+</head>
+
+<body class="bg-gradient-to-r from-emerald-50 to-sky-50 text-gray-800 flex flex-col min-h-screen">
+
+<header class="header-bg">
+  <div class="header-overlay"></div>
+  <div class="header-content">
+    <a href="index.html" class="header-arrow">⬅️</a>
+    <h1 class="header-title">Heiliger Koran</h1>
+    <div style="width:2rem"></div>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto p-4 pb-56 flex-grow">
+
+<label class="block mb-2 font-medium">Übersetzung</label>
+<select id="translationSelect"
+  class="border rounded px-3 py-2 w-full mb-3"
+  onchange="updateTranslation()">
+  <option value="de.zaidan" selected>Deutsch</option>
+  <option value="de.shakir">Deutsch (Shakir)</option>
+  <option value="en.sahih">English</option>
+  <option value="fr.hamidullah">Français</option>
+  <option value="so.abduh">Somali</option>
+  <option value="sw.barwani">Swahili</option>
+  <option value="fa.makarem">فارسی</option>
+  <option value="ps.abdulwali">پښتو</option>
+  <option value="id.indonesian">Bahasa Indonesia</option>
+</select>
+
+<label class="block mb-2 font-medium">Suche nach Sure</label>
+<input type="text" id="searchSurah"
+  placeholder="Sure Name oder Nummer"
+  class="border rounded px-3 py-2 w-full mb-6"
+  oninput="filterSurah()">
+
+<div id="surahList" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+<div id="surahContent" class="mt-6 space-y-4"></div>
+<button id="continueBtn"
+  class="hidden mt-6 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded shadow">
+  ▶️ Fortfahren
+</button>
+
+</main>
+
+<!-- Sticky Audio Player -->
+<div id="audioBar"
+  class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-3 z-40 hidden">
+  <audio id="surahAudio" controls controlsList="nodownload" class="w-full"></audio>
+</div>
+
+<!-- FOOTER -->
+<footer class="bg-white border-t text-sm text-gray-700 mt-6">
+  <div class="max-w-5xl mx-auto p-6 text-center space-y-4">
+
+    <p class="text-xs text-gray-400">
+      © 2025 LearnKoran.de – private Bildungsseite
+    </p>
+
+    <p class="text-sm">
+      <a href="impressum.html" class="underline mx-2">Impressum</a> |
+      <a href="datenschutz.html" class="underline mx-2">Datenschutz</a> |
+      <a href="ueber-uns.html" class="underline mx-2">Über uns</a>
+    </p>
+
+    <details class="border rounded bg-emerald-50 text-left text-sm">
+      <summary class="cursor-pointer px-4 py-2 font-semibold border-l-4 border-emerald-600">
+        Quellen & Urheberrecht
+      </summary>
+      <div class="px-4 py-3">
+        Der arabische Qurʾān-Text ist gemeinfrei (Public Domain).<br>
+        Übersetzungen, Transliterationen und Rezitationen werden live über externe APIs
+        (u.a. api.alquran.cloud) bereitgestellt und unterliegen dem Urheberrecht der jeweiligen Rechteinhaber.<br>
+        Audiodateien werden ausschließlich gestreamt und nicht gespeichert.<br>
+        Headerbild: lizenzfrei von Pixabay
+      </div>
+    </details>
+
+  </div>
+</footer>
+
+<script>
+let selectedTranslation="de.zaidan";
+let currentSurah=null;
+let surahData=[];
+let currentAyah=0;
+let audioAyahs=[];
+
+function updateTranslation(){
+  selectedTranslation=translationSelect.value;
+  if(currentSurah) loadSurah(currentSurah);
+}
+
+async function loadSurahList(){
+  const r=await fetch("https://api.alquran.cloud/v1/surah");
+  const d=await r.json();
+  surahData=d.data;
+  surahList.innerHTML="";
+  d.data.forEach(s=>{
+    surahList.innerHTML+=`
+      <button onclick="loadSurah(${s.number})"
+        class="bg-emerald-100 hover:bg-emerald-200 p-3 rounded text-left">
+        ${s.number}. ${s.englishName}
+      </button>`;
+  });
+}
+
+function filterSurah(){
+  const q=searchSurah.value.toLowerCase();
+  surahList.innerHTML="";
+  surahData.filter(s =>
+    s.englishName.toLowerCase().includes(q) ||
+    s.number.toString().includes(q)
+  ).forEach(s=>{
+    surahList.innerHTML+=`
+      <button onclick="loadSurah(${s.number})"
+        class="bg-emerald-100 hover:bg-emerald-200 p-3 rounded text-left">
+        ${s.number}. ${s.englishName}
+      </button>`;
+  });
+}
+
+async function loadSurah(n){
+  currentSurah=n;
+  currentAyah=0;
+  surahContent.innerHTML="Lade Verse...";
+  surahAudio.pause();
+  audioBar.classList.add("hidden");
+
+  const r=await fetch(
+    `https://api.alquran.cloud/v1/surah/${n}/editions/quran-uthmani,${selectedTranslation},en.transliteration,ar.alafasy`
+  );
+  const d=await r.json();
+
+  const ar=d.data[0].ayahs;
+  const tr=d.data[1].ayahs;
+  const tl=d.data[2].ayahs;
+  audioAyahs=d.data[3].ayahs;
+
+  let h=`<h2 class="text-2xl font-bold mb-4">${d.data[0].englishName}</h2>`;
+  ar.forEach((a,i)=>{
+    h+=`
+      <div id="ayah-${i}" onclick="jumpToAyah(${i})"
+        class="border-b pb-4 space-y-2 cursor-pointer hover:bg-blue-50 rounded">
+        <p class="font-arabic text-xl text-right">${a.text}</p>
+        <p class="italic text-sm text-gray-500 font-latin">${tl[i].text}</p>
+        <p>${tr[i].text}</p>
+      </div>`;
+  });
+
+  surahContent.innerHTML=h;
+
+  surahAudio.src = audioAyahs[0].audio;
+  audioBar.classList.remove("hidden");
+  surahAudio.play();
+  highlightAyah(0);
+
+  surahAudio.onended = playNextAyah;
+}
+
+function playNextAyah(){
+  currentAyah++;
+  if(currentAyah<audioAyahs.length){
+    surahAudio.src=audioAyahs[currentAyah].audio;
+    surahAudio.play();
+    highlightAyah(currentAyah);
+  }
+}
+
+function highlightAyah(i){
+  document.querySelectorAll("[id^='ayah-']").forEach(a=>{
+    a.classList.remove("ayah-active");
+  });
+  const el=document.getElementById(`ayah-${i}`);
+  if(el){
+    el.classList.add("ayah-active");
+    el.scrollIntoView({behavior:"smooth",block:"center"});
+  }
+}
+
+function jumpToAyah(i){
+  currentAyah=i;
+  surahAudio.src=audioAyahs[i].audio;
+  surahAudio.play();
+  highlightAyah(i);
+localStorage.setItem("lastSurah", currentSurah);
+localStorage.setItem("lastAyah", i);
+}
+
+const lastSurah = localStorage.getItem("lastSurah");
+const lastAyah  = localStorage.getItem("lastAyah");
+
+if (lastSurah && lastAyah) {
+  const btn = document.getElementById("continueBtn");
+  btn.classList.remove("hidden");
+
+  btn.onclick = async () => {
+    await loadSurah(parseInt(lastSurah));
+    setTimeout(() => {
+      jumpToAyah(parseInt(lastAyah));
+    }, 800);
+  };
+}
+loadSurahList();
+</script>
+
+</body>
+</html>
