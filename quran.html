@@ -7,7 +7,6 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-.font-arabic{font-family:"Scheherazade","Amiri",serif;direction:rtl}
 .font-latin{font-family:Arial,sans-serif;direction:ltr}
 
 /* aktive Ayah */
@@ -18,10 +17,8 @@
   transition: background-color 0.3s;
 }
 
-/* Footer über Player */
 footer{position:relative;z-index:50}
 
-/* HEADER mit lokal gespeichertem Hintergrundbild */
 .header-bg{
   background-image: url('Ramadan-3435847_640.jpg');
   background-size: cover;
@@ -32,7 +29,7 @@ footer{position:relative;z-index:50}
 .header-overlay{
   position: absolute;
   inset: 0;
-  background-color: rgba(0,0,0,0.35); /* dunkler Overlay für bessere Lesbarkeit */
+  background-color: rgba(0,0,0,0.35);
 }
 .header-content{
   position: relative;
@@ -108,7 +105,6 @@ footer{position:relative;z-index:50}
   <audio id="surahAudio" controls controlsList="nodownload" class="w-full"></audio>
 </div>
 
-<!-- FOOTER -->
 <footer class="bg-white border-t text-sm text-gray-700 mt-6">
   <div class="max-w-5xl mx-auto p-6 text-center space-y-4">
 
@@ -127,9 +123,9 @@ footer{position:relative;z-index:50}
         Quellen & Urheberrecht
       </summary>
       <div class="px-4 py-3">
-        Der arabische Qurʾān-Text ist gemeinfrei (Public Domain).<br>
+        Der arabische Qurʾān-Text wird hier nicht angezeigt.<br>
         Übersetzungen, Transliterationen und Rezitationen werden live über externe APIs
-        (u.a. api.alquran.cloud) bereitgestellt und unterliegen dem Urheberrecht der jeweiligen Rechteinhaber.<br>
+        (u.a. api.alquran.cloud) bereitgestellt.<br>
         Audiodateien werden ausschließlich gestreamt und nicht gespeichert.<br>
         Headerbild: lizenzfrei von Pixabay
       </div>
@@ -187,21 +183,19 @@ async function loadSurah(n){
   audioBar.classList.add("hidden");
 
   const r=await fetch(
-    `https://api.alquran.cloud/v1/surah/${n}/editions/quran-uthmani,${selectedTranslation},en.transliteration,ar.alafasy`
+    `https://api.alquran.cloud/v1/surah/${n}/editions/${selectedTranslation},en.transliteration,ar.alafasy`
   );
   const d=await r.json();
 
-  const ar=d.data[0].ayahs;
-  const tr=d.data[1].ayahs;
-  const tl=d.data[2].ayahs;
-  audioAyahs=d.data[3].ayahs;
+  const tr=d.data[0].ayahs;
+  const tl=d.data[1].ayahs;
+  audioAyahs=d.data[2].ayahs;
 
   let h=`<h2 class="text-2xl font-bold mb-4">${d.data[0].englishName}</h2>`;
-  ar.forEach((a,i)=>{
+  tr.forEach((a,i)=>{
     h+=`
       <div id="ayah-${i}" onclick="jumpToAyah(${i})"
         class="border-b pb-4 space-y-2 cursor-pointer hover:bg-blue-50 rounded">
-        <p class="font-arabic text-xl text-right">${a.text}</p>
         <p class="italic text-sm text-gray-500 font-latin">${tl[i].text}</p>
         <p>${tr[i].text}</p>
       </div>`;
@@ -242,8 +236,8 @@ function jumpToAyah(i){
   surahAudio.src=audioAyahs[i].audio;
   surahAudio.play();
   highlightAyah(i);
-localStorage.setItem("lastSurah", currentSurah);
-localStorage.setItem("lastAyah", i);
+  localStorage.setItem("lastSurah", currentSurah);
+  localStorage.setItem("lastAyah", i);
 }
 
 const lastSurah = localStorage.getItem("lastSurah");
@@ -260,6 +254,7 @@ if (lastSurah && lastAyah) {
     }, 800);
   };
 }
+
 loadSurahList();
 </script>
 
