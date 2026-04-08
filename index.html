@@ -14,7 +14,6 @@
   margin-bottom: 2rem;
 }
 
-/* HEADER HINTERGRUND */
 .header-bg {
   background-image:
     linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
@@ -27,124 +26,142 @@
 
 <body class="bg-gradient-to-r from-emerald-50 to-sky-50 text-gray-800 flex flex-col min-h-screen">
 
-<!-- HEADER -->
 <header class="header-bg shadow p-6">
-  <div class="max-w-5xl mx-auto flex justify-between items-center text-white">
+<div class="max-w-5xl mx-auto flex justify-between items-center text-white">
 
-    <a href="quran.html"
-       class="bg-emerald-600 hover:bg-emerald-700 px-5 py-2 rounded-lg shadow">
-       📖 Heiliger Koran
-    </a>
+<a href="quran.html"
+class="bg-emerald-600 hover:bg-emerald-700 px-5 py-2 rounded-lg shadow">
+📖 Heiliger Koran
+</a>
 
-    <h1 class="text-2xl font-bold tracking-wide">
-      LearnKoran
-    </h1>
+<h1 class="text-2xl font-bold tracking-wide">
+LearnKoran
+</h1>
 
-  </div>
+</div>
 </header>
 
 <main class="flex-grow">
 
 <section class="py-16 text-center">
+
 <h2 class="text-3xl font-bold mb-6">Gebetszeiten & Uhrzeit</h2>
 
 <div id="clock" class="clock-numbers">00:00:00</div>
 
 <select id="citySelect"
-  class="border rounded px-4 py-2 mb-6"
-  onchange="updatePrayerTimes()">
-  <option>Berlin</option>
-  <option>Hamburg</option>
-  <option>München</option>
-  <option>Köln</option>
-  <option>Frankfurt</option>
-  <option>Leipzig</option>
-  <option>Stuttgart</option>
-  <option>Düsseldorf</option>
-  <option>Dortmund</option>
-  <option>Essen</option>
+class="border rounded px-4 py-2 mb-6"
+onchange="updatePrayerTimes()">
+<option>Berlin</option>
+<option>Hamburg</option>
+<option>München</option>
+<option>Köln</option>
+<option>Frankfurt</option>
+<option>Leipzig</option>
+<option>Stuttgart</option>
+<option>Düsseldorf</option>
+<option>Dortmund</option>
+<option>Essen</option>
 </select>
 
 <ul id="prayerList"
-  class="max-w-md mx-auto bg-white p-6 rounded-xl shadow space-y-3">
+class="max-w-md mx-auto bg-white p-6 rounded-xl shadow space-y-3">
 </ul>
+
 </section>
 
 </main>
 
-<!-- FOOTER -->
 <footer class="bg-white border-t text-sm text-gray-700">
-  <div class="max-w-5xl mx-auto p-6 text-center space-y-3">
+<div class="max-w-5xl mx-auto p-6 text-center space-y-3">
 
-    <p class="text-xs text-gray-400">
-      © 2025 LearnKoran – private Bildungsseite
-    </p>
+<p class="text-xs text-gray-400">
+© 2025 LearnKoran – private Bildungsseite
+</p>
 
-    <p class="text-sm">
-      <a href="ueber-uns.html" class="underline mx-2">Über uns</a>
-      <a href="impressum.html" class="underline mx-2">Impressum</a> |
-      <a href="datenschutz.html" class="underline mx-2">Datenschutz</a>
-    </p>
+<p class="text-sm">
+<a href="ueber-uns.html" class="underline mx-2">Über uns</a>
+<a href="impressum.html" class="underline mx-2">Impressum</a> |
+<a href="datenschutz.html" class="underline mx-2">Datenschutz</a>
+</p>
 
-    <details class="border rounded max-w-md mx-auto">
-      <summary class="cursor-pointer px-4 py-2 font-semibold bg-gray-50">
-        Quellen & Urheberrecht
-      </summary>
-      <div class="px-4 py-3 text-left text-sm">
-        Der arabische Qurʾān-Text ist gemeinfrei (Public Domain).<br>
-        Übersetzungen, Transliterationen und Rezitationen
-        werden live über externe APIs (u.a. api.alquran.cloud) bereitgestellt
-        und unterliegen dem Urheberrecht der jeweiligen Rechteinhaber.<br>
-        Audiodateien werden ausschließlich gestreamt und nicht gespeichert.<br>
-        Headerbild: lizenzfrei von Pixabay
-      </div>
-    </details>
-
-  </div>
+</div>
 </footer>
 
 <script>
+
 function updateNumberClock(){
-  const n=new Date();
-  clock.textContent=
-    String(n.getHours()).padStart(2,'0')+":"+
-    String(n.getMinutes()).padStart(2,'0')+":"+
-    String(n.getSeconds()).padStart(2,'0');
+const n=new Date();
+clock.textContent=
+String(n.getHours()).padStart(2,'0')+":"+
+String(n.getMinutes()).padStart(2,'0')+":"+
+String(n.getSeconds()).padStart(2,'0');
 }
+
 setInterval(updateNumberClock,1000);
 updateNumberClock();
 
+
+function addTwoHours(time){
+
+let [h,m] = time.split(":").map(Number);
+
+h += 2;
+
+if(h >= 24){
+h -= 24;
+}
+
+return String(h).padStart(2,'0') + ":" + String(m).padStart(2,'0');
+
+}
+
+
 async function updatePrayerTimes(){
-  prayerList.innerHTML="Lade Zeiten...";
-  try{
-    const city = encodeURIComponent(citySelect.value);
-    const r = await fetch(
-      `https://api.aladhan.com/v1/timingsByCity?city=${city}&country=Germany&method=2`
-    );
-    const j = await r.json();
-    const t = j.data.timings;
 
-    prayerList.innerHTML="";
+prayerList.innerHTML="Lade Zeiten...";
 
-    ["Fajr","Dhuhr","Asr","Maghrib","Isha"].forEach(p=>{
-      let time = t[p];
+try{
 
-      if(p === "Isha"){
-        time = "22:00";
-      }
+const city = encodeURIComponent(citySelect.value);
 
-      prayerList.innerHTML+=`
-        <li class="flex justify-between border-b pb-2">
-          <span>${p}</span><b>${time}</b>
-        </li>`;
-    });
+const r = await fetch(
+`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=Germany&method=2`
+);
 
-  }catch{
-    prayerList.innerHTML="Fehler beim Laden.";
-  }
+const j = await r.json();
+
+const t = j.data.timings;
+
+const ishaTime = addTwoHours(t["Maghrib"]);
+
+prayerList.innerHTML="";
+
+["Fajr","Dhuhr","Asr","Maghrib","Isha"].forEach(p=>{
+
+let time = t[p];
+
+if(p === "Isha"){
+time = ishaTime;
+}
+
+prayerList.innerHTML += `
+<li class="flex justify-between border-b pb-2">
+<span>${p}</span><b>${time}</b>
+</li>`;
+
+});
+
+}catch{
+
+prayerList.innerHTML="Fehler beim Laden.";
+
+}
+
 }
 
 updatePrayerTimes();
+
 </script>
 
 </body>
