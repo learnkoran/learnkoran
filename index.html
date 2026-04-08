@@ -123,17 +123,27 @@ async function updatePrayerTimes(){
     );
     const j = await r.json();
     const t = j.data.timings;
+
     prayerList.innerHTML="";
+
     ["Fajr","Dhuhr","Asr","Maghrib","Isha"].forEach(p=>{
+      let time = t[p];
+
+      if(p === "Isha"){
+        time = "22:00";
+      }
+
       prayerList.innerHTML+=`
         <li class="flex justify-between border-b pb-2">
-          <span>${p}</span><b>${t[p]}</b>
+          <span>${p}</span><b>${time}</b>
         </li>`;
     });
+
   }catch{
     prayerList.innerHTML="Fehler beim Laden.";
   }
 }
+
 updatePrayerTimes();
 </script>
 
